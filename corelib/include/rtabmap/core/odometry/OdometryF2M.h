@@ -56,7 +56,7 @@ public:
 
 private:
 	virtual Transform computeTransform(SensorData & data, const Transform & guess = Transform(), OdometryInfo * info = 0);
-
+	void printTranform(Transform pose);
 private:
 	//Parameters
 	int maximumMapSize_;

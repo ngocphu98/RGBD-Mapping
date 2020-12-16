@@ -46,6 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <rtabmap/core/odometry/OdometryF2M.h>
 #include <pcl/common/io.h>
 
+
 #if _MSC_VER
 	#define ISFINITE(value) _finite(value)
 #else
@@ -150,7 +151,7 @@ OdometryF2M::OdometryF2M(const ParametersMap & parameters) :
 	{
 		UWARN("%s=false is not supported by OdometryF2M, setting to true.",
 				Parameters::kVisForwardEstOnly().c_str());
-		forwardEst = true;
+		forwardEst = true;	
 	}
 	uInsert(bundleParameters, ParametersPair(Parameters::kVisForwardEstOnly(), uBool2Str(forwardEst)));
 
@@ -177,6 +178,13 @@ OdometryF2M::~OdometryF2M()
 	UDEBUG("");
 }
 
+void OdometryF2M::printTranform(Transform pose)
+{
+	UDEBUG("Tranform matrix:");
+	UDEBUG("%f %f %f", pose.r11(), pose.r12(), pose.r13());
+	UDEBUG("%f %f %f", pose.r21(),  pose.r22(), pose.r23());
+	UDEBUG("%f %f %f", pose.r31(), pose.r32(), pose.r33());	
+}
 
 void OdometryF2M::reset(const Transform & initialPose)
 {
@@ -222,6 +230,7 @@ Transform OdometryF2M::computeTransform(
 	Transform imuT;
 	if(sba_ && sba_->gravitySigma() > 0.0f && !data.imu().empty())
 	{
+		UDEBUG("if(sba_ && sba_->gravitySigma() > 0.0f && !data.imu().empty())");
 		if(imus().empty())
 		{
 			UERROR("IMU received doesn't have orientation set, it is ignored. If you are using RTAB-Map standalone, enable IMU filtering in Preferences->Source panel. On ROS, use \"imu_filter_madgwick\" or \"imu_complementary_filter\" packages to compute the orientation.");
@@ -231,6 +240,7 @@ Transform OdometryF2M::computeTransform(
 			imuT = Transform::getTransform(imus(), data.stamp());
 			if(this->getPose().r11() == 1.0f && this->getPose().r22() == 1.0f && this->getPose().r33() == 1.0f)
 			{
+				UDEBUG("if(this->getPose().r11() == 1.0f && this->getPose().r22() == 1.0f && this->getPose().r33() == 1.0f)");
 				if(!imuT.isNull())
 				{
 					Eigen::Quaterniond imuQuat = imuT.getQuaterniond();
@@ -274,6 +284,7 @@ Transform OdometryF2M::computeTransform(
 	// Generate keypoints from the new data
 	if(lastFrame_->sensorData().isValid())
 	{
+		UDEBUG("Generate keypoints from the new data");
 		if((map_->getWords3().size() || !map_->sensorData().laserScanRaw().isEmpty()) &&
 			lastFrame_->sensorData().isValid())
 		{
@@ -291,6 +302,7 @@ Transform OdometryF2M::computeTransform(
 					guessIteration<(!guess.isNull()&&regPipeline_->isImageRequired()?2:1) && transform.isNull();
 					++guessIteration)
 			{
+				UDEBUG("GuessIteration: = %d ", &guessIteration);
 				tmpMap = *map_;
 				// reset matches, but keep already extracted features in lastFrame_->sensorData()
 				lastFrame_->removeAllWords();
@@ -322,14 +334,14 @@ Transform OdometryF2M::computeTransform(
 				{
 					UWARN("Failed to find a transformation with the provided guess (%s), trying again without a guess.", guess.prettyPrint().c_str());
 				}
-
+				UDEBUG("transform = regPipeline_->computeTransformationMod(");
 				transform = regPipeline_->computeTransformationMod(
 						tmpMap,
 						*lastFrame_,
 						// special case for ICP-only odom, set guess to identity if we just started or reset
 						guessIteration==0 && !guess.isNull()?this->getPose()*guess:!regPipeline_->isImageRequired()&&this->framesProcessed()<2?this->getPose():Transform(),
 						&regInfo);
-
+				this->printTranform(transform);
 				if(maxCorrespondenceDistance>0.0f)
 				{
 					// set it back
@@ -540,6 +552,7 @@ Transform OdometryF2M::computeTransform(
 					if(!transform.isNull())
 					{
 						// make it incremental
+						UDEBUG("transform = this->getPose().inverse() * transform;");
 						transform = this->getPose().inverse() * transform;
 					}
 				}
@@ -574,6 +587,7 @@ Transform OdometryF2M::computeTransform(
 
 			if(!transform.isNull())
 			{
+				UDEBUG("if(!transform.isNull())");
 				output = transform;
 
 				bool modified = false;

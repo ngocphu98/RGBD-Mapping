@@ -58,7 +58,8 @@ int main(int argc, char * argv[])
 {
 	ULogger::setType(ULogger::kTypeConsole);
 	ULogger::setLevel(ULogger::kError);
-
+	ULogger::setLevel(ULogger::kDebug);
+	
 	if(argc < 8)
 	{
 		showUsage();
@@ -120,7 +121,6 @@ int main(int argc, char * argv[])
 			{
 				OdometryInfo info;
 				Transform pose = odom->process(data, &info);
-
 				if(odometryIteration++ % mapUpdate == 0)
 				{
 					if(rtabmap.process(data, pose))

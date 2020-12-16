@@ -55,6 +55,8 @@ int main(int argc, char * argv[])
 {
 	ULogger::setType(ULogger::kTypeConsole);
 	ULogger::setLevel(ULogger::kWarning);
+	ULogger::setLevel(ULogger::kDebug);
+	
 
 	int driver = 0;
 	if(argc < 2)

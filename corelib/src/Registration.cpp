@@ -209,6 +209,7 @@ Transform Registration::computeTransformationMod(
 	{
 		if(!t.isNull())
 		{
+			UDEBUG("if(!t.isNull())");
 			t = child_->computeTransformationMod(from, to, force3DoF_?t.to3DoF():t, &info);
 		}
 		else if(!guess.isNull())
@@ -220,6 +221,7 @@ Transform Registration::computeTransformationMod(
 	else if(repeatOnce_ && guess.isNull() && !t.isNull() && this->canUseGuess())
 	{
 		// redo with guess to get a more accurate transform
+		UDEBUG("else if(repeatOnce_ && guess.isNull() && !t.isNull() && this->canUseGuess())");
 		t = computeTransformationImpl(from, to, t, info);
 
 		if(!t.isNull() && force3DoF_)

@@ -1397,4 +1397,6 @@ MESSAGE(SEND_ERROR "No graph optimizer found! You should have at least one of th
        set -DWITH_TORO=ON")
 ENDIF(NOT GTSAM_FOUND AND NOT G2O_FOUND AND NOT WITH_TORO AND NOT CERES_FOUND)
 
+# ADD_SUBDIRECTORY( intergration )
+
 # vim: set et ft=cmake fenc=utf-8 ff=unix sts=0 sw=2 ts=2 :

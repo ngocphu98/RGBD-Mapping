@@ -288,6 +288,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	{
 		if(data.stereoCameraModel().isValidForRectification())
 		{
+			UDEBUG("if(data.stereoCameraModel().isValidForRectification())");
 			if(!stereoModel_.isRectificationMapInitialized() ||
 				stereoModel_.left().imageSize() != data.stereoCameraModel().left().imageSize())
 			{
@@ -314,6 +315,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 						stereoModel_,
 						false);
 			}
+			
 		}
 		else
 		{
@@ -326,12 +328,14 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	// Ground alignment
 	if(_pose.isIdentity() && _alignWithGround)
 	{
+		UDEBUG("Ground alignment");
 		if(data.depthOrRightRaw().empty())
 		{
 			UWARN("\"%s\" is true but the input has no depth information, ignoring alignment with ground...", Parameters::kOdomAlignWithGround().c_str());
 		}
 		else
 		{
+			UDEBUG("");
 			UTimer alignTimer;
 			pcl::IndicesPtr indices(new std::vector<int>);
 			pcl::IndicesPtr ground, obstacles;
@@ -389,6 +393,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	// cache imu data
 	if(!data.imu().empty())
 	{
+		UDEBUG("Cache imu data");
 		if(!(data.imu().orientation()[0] == 0.0 && data.imu().orientation()[1] == 0.0 && data.imu().orientation()[2] == 0.0))
 		{
 			Transform orientation(0,0,0, data.imu().orientation()[0], data.imu().orientation()[1], data.imu().orientation()[2], data.imu().orientation()[3]);
@@ -406,6 +411,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	Transform guess = dt>0.0 && guessFromMotion_ && !velocityGuess_.isNull()?Transform::getIdentity():Transform();
 	if(!(dt>0.0 || (dt == 0.0 && velocityGuess_.isNull())))
 	{
+		UDEBUG("");
 		if(guessFromMotion_ && (!data.imageRaw().empty() || !data.laserScanRaw().isEmpty()))
 		{
 			UERROR("Guess from motion is set but dt is invalid! Odometry is then computed without guess. (dt=%f previous transform=%s)", dt, velocityGuess_.prettyPrint().c_str());
@@ -420,8 +426,10 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	}
 	if(!velocityGuess_.isNull())
 	{
+		UDEBUG("if(!velocityGuess_.isNull())");
 		if(guessFromMotion_)
 		{
+			
 			if(_filteringStrategy == 1)
 			{
 				// use Kalman predict transform
@@ -438,6 +446,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 		}
 		else if(_filteringStrategy == 1)
 		{
+			UDEBUG("");
 			predictKalmanFilter(dt);
 		}
 	}
@@ -445,10 +454,12 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	Transform imuCurrentTransform;
 	if(!guessIn.isNull())
 	{
+		UDEBUG("if(!guessIn.isNull())");
 		guess = guessIn;
 	}
 	else if(!data.imu().empty() && !imus_.empty())
 	{
+		UDEBUG("ELSE guessin null");
 		// replace orientation guess with IMU (if available)
 		imuCurrentTransform = Transform::getTransform(imus_, data.stamp());
 		if(!imuCurrentTransform.isNull() && !imuLastTransform_.isNull())
@@ -466,6 +477,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	if(_imageDecimation > 1 && !data.imageRaw().empty())
 	{
 		// Decimation of images with calibrations
+		UDEBUG("Decimation of images with calibrations");
 		SensorData decimatedData = data;
 		cv::Mat rgbLeft = util2d::decimate(decimatedData.imageRaw(), _imageDecimation);
 		cv::Mat depthRight = util2d::decimate(decimatedData.depthOrRightRaw(), _imageDecimation);
@@ -490,6 +502,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 
 
 		// compute transform
+		UDEBUG("Compute transform");
 		t = this->computeTransform(decimatedData, guess, info);
 
 		// transform back the keypoints in the original image
@@ -525,6 +538,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 	}
 	else
 	{
+		UDEBUG("else_imageDecimation > 1 && !data.imageRaw().empty()");
 		t = this->computeTransform(data, guess, info);
 	}
 
@@ -557,6 +571,7 @@ Transform Odometry::process(SensorData & data, const Transform & guessIn, Odomet
 
 	if(!t.isNull())
 	{
+		UDEBUG("calculate odometry thing");
 		_resetCurrentCount = _resetCountdown;
 
 		float vx,vy,vz, vroll,vpitch,vyaw;
