@@ -77,11 +77,11 @@ class FreenectDevice : public UThread {
 		std::vector<std::string> deviceSerials;
 		freenect_device_attributes* attr_list;
 		freenect_device_attributes* item;
-		freenect_list_device_attributes(ctx_, &attr_list);
-		for (item = attr_list; item != NULL; item = item->next) {
-			deviceSerials.push_back(std::string(item->camera_serial));
-		}
-		freenect_free_device_attributes(attr_list);
+		// freenect_list_device_attributes(ctx_, &attr_list);
+		// for (item = attr_list; item != NULL; item = item->next) {
+		// 	deviceSerials.push_back(std::string(item->camera_serial));
+		// }
+		// freenect_free_device_attributes(attr_list);
 
 		if(freenect_open_device(ctx_, &device_, index_) < 0)
 		{
