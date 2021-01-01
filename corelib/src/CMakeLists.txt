@@ -77,7 +77,9 @@ SET(SRC_FILES
     RegistrationVis.cpp
     
     Odometry.cpp
-    OdometryThread.cpp
+	OdometryThread.cpp
+	# phule modified
+    odometry/ObjectDetect.cpp
     odometry/OdometryF2M.cpp
     odometry/OdometryMono.cpp
     odometry/OdometryF2F.cpp
