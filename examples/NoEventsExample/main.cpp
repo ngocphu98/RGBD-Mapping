@@ -34,6 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QApplication>
 #include <stdio.h>
 
+#include "/home/phule/rtabmap/corelib/src/odometry/ObjectDetect.h"
+#include "rtabmap/core/util2d.h"
+ObjDetect Detector("/home/phule/rtabmap/SampleObjects");
+
 using namespace rtabmap;
 
 void showUsage()
@@ -58,7 +62,7 @@ int main(int argc, char * argv[])
 {
 	ULogger::setType(ULogger::kTypeConsole);
 	ULogger::setLevel(ULogger::kError);
-	ULogger::setLevel(ULogger::kDebug);
+	// ULogger::setLevel(ULogger::kDebug);
 	
 	if(argc < 8)
 	{
@@ -112,6 +116,7 @@ int main(int argc, char * argv[])
 		QApplication::processEvents();
 
 		SensorData data = camera.takeImage();
+		Object convertData;
 		int cameraIteration = 0;
 		int odometryIteration = 0;
 		printf("Press \"Space\" in the window to pause\n");
@@ -119,6 +124,34 @@ int main(int argc, char * argv[])
 		{
 			if(cameraIteration++ % odomUpdate == 0)
 			{
+				convertData.grayImg = data.imageRaw();
+				cv::Mat depth_tmp = util2d::depthFromDisparity(
+									util2d::disparityFromStereoImages(data.imageRaw(), data.rightRaw()),
+									data.stereoCameraModel().left().fx(),
+									data.stereoCameraModel().baseline());
+
+				convertData.depth = depth_tmp;
+				std::cout << "\ndepth_tmp.cols" << depth_tmp.cols;
+				std::cout << "\ndepth_tmp.rows" << depth_tmp.rows;
+				cv::Point2i coordinate = Detector.detectObject(convertData);
+				std::cout<< "\ncoordinate.x" << coordinate.x;	
+				std::cout<< "\ncoordinate.y" << coordinate.y;
+				double min;
+				double max;
+				cv::minMaxIdx(depth_tmp, &min, &max);
+				cv::Mat adjMap;
+				// expand your range to 0..255. Similar to histEq();
+				depth_tmp.convertTo(adjMap,CV_8UC1, 255 / (max-min), -min); 
+
+				// this is great. It converts your grayscale image into a tone-mapped one, 
+				// much more pleasing for the eye
+				// function is found in contrib module, so include contrib.hpp 
+				// and link accordingly
+				cv::Mat falseColorsMap;
+				applyColorMap(adjMap, falseColorsMap, cv::COLORMAP_AUTUMN);
+
+				cv::imshow("Out", falseColorsMap);	
+
 				OdometryInfo info;
 				Transform pose = odom->process(data, &info);
 				if(odometryIteration++ % mapUpdate == 0)

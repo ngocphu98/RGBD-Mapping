@@ -46,6 +46,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <rtabmap/core/odometry/OdometryF2M.h>
 #include <pcl/common/io.h>
 
+#include "/home/phule/rtabmap/corelib/src/odometry/ObjectDetect.h"
+#include "rtabmap/core/util2d.h"
+
+#define GAUSS_VARICANCE_1 0.2
+#define GAUSS_VARICANCE_2 0.2
+
+#define kal(a,b) a + (GAUSS_VARICANCE_1/(GAUSS_VARICANCE_1 + GAUSS_VARICANCE_2))*(b - a)
+
+ObjDetect Detector("/home/phule/rtabmap/SampleObjects");
+
 
 #if _MSC_VER
 	#define ISFINITE(value) _finite(value)
@@ -342,6 +352,31 @@ Transform OdometryF2M::computeTransform(
 						guessIteration==0 && !guess.isNull()?this->getPose()*guess:!regPipeline_->isImageRequired()&&this->framesProcessed()<2?this->getPose():Transform(),
 						&regInfo);
 				this->printTranform(transform);
+				//Intergration for Object detect
+				UDEBUG("transform = %s", transform.prettyPrint().c_str());
+				static Object convertData;
+				if (!transform.isNull())
+				{
+					convertData.grayImg = data.imageRaw();
+					convertData.depth 	= data.depthRaw();
+					cv::Point2f coordinate = Detector.detectObject(convertData);
+					UINFO("Coordinate x = %f, y = %f", coordinate.x, coordinate.y);
+					float x_tmp, y_tmp, z_tmp, roll_tmp, pitch_tmp, yaw_tmp; 
+					transform.getTranslationAndEulerAngles(x_tmp, y_tmp, z_tmp, roll_tmp, pitch_tmp, yaw_tmp);
+
+					//Optimize tranformation matrix using kalman filter
+					float xq, yq, zq;
+					xq = kal(x_tmp, coordinate.x);
+					yq = kal(x_tmp, coordinate.y);
+					zq = z_tmp;
+					UINFO("Kalman filter applied: xq = %f, yq = %f, zq = %f", xq, yq, zq);	
+					// Update new coordinate
+					if ((coordinate.x != NULL) && (coordinate.y != NULL))
+					{
+						transform = Transform(xq, yq, zq, roll_tmp, pitch_tmp, yaw_tmp);
+						UDEBUG("New transform: %s", transform.prettyPrint().c_str());
+					}
+				}
 				if(maxCorrespondenceDistance>0.0f)
 				{
 					// set it back
