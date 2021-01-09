@@ -24,13 +24,13 @@ struct Object
     cv::Mat depth;
     std::vector<cv::KeyPoint> keyPoints;
     cv::Mat descriptor;
-    cv::Point2i coordinate = cv::Point2i(0,0);    
+    cv::Point2f coordinate = cv::Point2f(0,0);    
 };
 
 struct objectInfor
 {
     int id;
-    int distance;
+    float distance;
 };
 
 class ObjDetect
@@ -46,9 +46,9 @@ class ObjDetect
         //Load all the object from the data base
         //Return 1 to suscess load
         bool loadAllObject(std::string objPath);
-        cv::Point2i detectObject(Object data);
-        cv::Point2i ComputeCoordinate(objectInfor objectId1, objectInfor objectId2, objectInfor objectId3);
-        int getDepth(Object data, Object img_object, std::vector<cv::DMatch> good_matches);
+        cv::Point2f detectObject(Object data);
+        cv::Point2f ComputeCoordinate(objectInfor objectId1, objectInfor objectId2, objectInfor objectId3);
+        float getDepth(Object data, Object img_object, std::vector<cv::DMatch> good_matches);
 
         // coordinatesType detectObject(SensorData data);
         // coordinatesType ComputeLocalization(SensorData data);
