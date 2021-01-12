@@ -360,19 +360,19 @@ Transform OdometryF2M::computeTransform(
 					convertData.grayImg = data.imageRaw();
 					convertData.depth 	= data.depthRaw();
 					cv::Point2f coordinate = Detector.detectObject(convertData);
-					UINFO("Coordinate x = %f, y = %f", coordinate.x, coordinate.y);
-					float x_tmp, y_tmp, z_tmp, roll_tmp, pitch_tmp, yaw_tmp; 
-					transform.getTranslationAndEulerAngles(x_tmp, y_tmp, z_tmp, roll_tmp, pitch_tmp, yaw_tmp);
-
-					//Optimize tranformation matrix using kalman filter
-					float xq, yq, zq;
-					xq = kal(x_tmp, coordinate.x);
-					yq = kal(x_tmp, coordinate.y);
-					zq = z_tmp;
-					UINFO("Kalman filter applied: xq = %f, yq = %f, zq = %f", xq, yq, zq);	
-					// Update new coordinate
 					if ((coordinate.x != NULL) && (coordinate.y != NULL))
 					{
+						UINFO("Coordinate x = %f, y = %f", coordinate.x, coordinate.y);
+						float x_tmp, y_tmp, z_tmp, roll_tmp, pitch_tmp, yaw_tmp; 
+						transform.getTranslationAndEulerAngles(x_tmp, y_tmp, z_tmp, roll_tmp, pitch_tmp, yaw_tmp);
+	
+						//Optimize tranformation matrix using kalman filter
+						float xq, yq, zq;
+						xq = kal(x_tmp, coordinate.x);
+						yq = kal(x_tmp, coordinate.y);
+						zq = z_tmp;
+						UINFO("Kalman filter applied: xq = %f, yq = %f, zq = %f", xq, yq, zq);	
+						// Update new coordinate
 						transform = Transform(xq, yq, zq, roll_tmp, pitch_tmp, yaw_tmp);
 						UDEBUG("New transform: %s", transform.prettyPrint().c_str());
 					}

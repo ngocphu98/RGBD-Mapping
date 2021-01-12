@@ -60,7 +60,7 @@ bool ObjDetect::loadAllObject(std::string objPath)
             s_tmp = line.substr(pos, line.length());
             _objects[i].coordinate.y = strtof(s_tmp.c_str(), NULL);
             #ifdef DEBUG
-            UDEBUG("information of object: i= %d, path= %s, x= %d, y= %d", i, images[i], _objects[i].coordinate.x, _objects[i].coordinate.y);
+            printf("information of object: i= %d, path= %s, x= %f, y= %f\n", i, images[i].c_str(), _objects[i].coordinate.x, _objects[i].coordinate.y);
             #endif /*DEBUG*/
             _detector->detectAndCompute(_objects[i].grayImg, 
                                         cv::noArray(),

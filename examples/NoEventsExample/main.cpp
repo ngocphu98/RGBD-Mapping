@@ -62,7 +62,7 @@ int main(int argc, char * argv[])
 {
 	ULogger::setType(ULogger::kTypeConsole);
 	ULogger::setLevel(ULogger::kError);
-	// ULogger::setLevel(ULogger::kDebug);
+	ULogger::setLevel(ULogger::kDebug);
 	
 	if(argc < 8)
 	{
