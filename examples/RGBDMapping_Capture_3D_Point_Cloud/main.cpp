@@ -40,6 +40,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pcl/io/ply_io.h>
 #include <pcl/filters/filter.h>
 
+#include <pcl/visualization/cloud_viewer.h>
+#include <opencv2/opencv.hpp>
+
 #include "MapBuilder.h"
 
 void showUsage()
@@ -105,12 +108,39 @@ int main(int argc, char * argv[])
 
 	QApplication::processEvents();
 	SensorData data = camera->takeImage();
-
+	
 	printf("Press \"Space\" in the window to pause\n");
 	int cameraIteration = 0;
 	int odometryIteration = 0;	
 	while(data.isValid() && mapBuilder.isVisible())
 	{
+		if (cv::waitKey() == '1')
+		// if (1)
+		{
+			// save current img and current point cloud
+			SensorData data1 = data;
+			// how to save point cloud?
+			CloudViewer * cloudViewer1;
+			cloudViewer1 = new CloudViewer();
+			// cloudViewer1->addCloud(data, pose_)
+			pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1 = util3d::cloudRGBFromSensorData(
+																					data,
+																					4,     // decimation
+																					0.0f); // max depth			
+			// pcl::visualization::CloudViewer viewer ("Simple Cloud Viewer");
+			// viewer1->showCloud (cloud1);
+			while (cv::waitKey() != '1')
+			{
+				/* do nothing */
+			}
+		}
+		if (cv::waitKey() == '2')
+		{
+			// calculate matching point
+			//Display it 
+			SensorData data2 = data;
+		}
+		
 		if(cameraIteration++ % odomUpdate == 0)
 		{
 			OdometryInfo info;

@@ -115,7 +115,7 @@ cv::Point2f ObjDetect::detectObject(Object data)
         good_matches = this->filterMatched(knn_matches);
         #ifdef DEBUG
         int size_tmp = good_matches.size();
-        UDEBUG("good matched point founded: %d",size_tmp);
+        UERROR("good matched point founded: %d",size_tmp);
         #endif
         if (good_matches.size() >= 10)
         {
@@ -128,7 +128,7 @@ cv::Point2f ObjDetect::detectObject(Object data)
                 {
                     matched_object--;
                 }
-                UDEBUG("obj_id1 distance: %f", obj_id1.distance);
+                UERROR("obj_id1 distance: %f", obj_id1.distance);
             }
             if (matched_object == 2)
             {
@@ -138,7 +138,7 @@ cv::Point2f ObjDetect::detectObject(Object data)
                 {
                     matched_object--;
                 }                
-                UDEBUG("obj_id2 distance: %f", obj_id2.distance);
+                UERROR("obj_id2 distance: %f", obj_id2.distance);
             }
             if (matched_object == 3)
             {
@@ -148,7 +148,7 @@ cv::Point2f ObjDetect::detectObject(Object data)
                 {
                     matched_object--;
                 }                
-                UDEBUG("obj_id3 distance: %f", obj_id3.distance);
+                UERROR("obj_id3 distance: %f", obj_id3.distance);
             }            
             if (matched_object >= 3)
             {
@@ -210,9 +210,9 @@ cv::Point2f ObjDetect::detectObject(Object data)
 
 cv::Point2f ObjDetect::ComputeCoordinate(objectInfor objectId1, objectInfor objectId2, objectInfor objectId3)
 {   
-    UDEBUG("Objects1.coordinate.x: = %f, y = %f", _objects[objectId1.id].coordinate.x, _objects[objectId1.id].coordinate.y);
-    UDEBUG("Objects2.coordinate.x: = %f, y = %f", _objects[objectId2.id].coordinate.x, _objects[objectId2.id].coordinate.y);
-    UDEBUG("Objects3.coordinate.x: = %f, y = %f", _objects[objectId3.id].coordinate.x, _objects[objectId3.id].coordinate.y);
+    UERROR("Objects1.coordinate.x: = %f, y = %f", _objects[objectId1.id].coordinate.x, _objects[objectId1.id].coordinate.y);
+    UERROR("Objects2.coordinate.x: = %f, y = %f", _objects[objectId2.id].coordinate.x, _objects[objectId2.id].coordinate.y);
+    UERROR("Objects3.coordinate.x: = %f, y = %f", _objects[objectId3.id].coordinate.x, _objects[objectId3.id].coordinate.y);
 
     float xa = _objects[objectId1.id].coordinate.x;
     float ya = _objects[objectId1.id].coordinate.y; 
@@ -273,7 +273,7 @@ float ObjDetect::getDepth(Object data, Object object, std::vector<cv::DMatch> go
         cv::Point2f centralPoint = cv::Point2f((scene_corners[1].x - scene_corners[0].x)/2 + scene_corners[0].x,
             (scene_corners[1].y - scene_corners[2].y)/2 + scene_corners[2].y);
         #ifdef DEBUG
-        UDEBUG("Central Point: x = %d, y = %d", centralPoint.x, centralPoint.y);  
+        UERROR("Central Point: x = %f, y = %f", centralPoint.x, centralPoint.y);  
         cv::circle(img_scene, centralPoint, 2, cv::Scalar(255, 255, 255), 2);
         cv::imshow("Good Matches & Object detection", img_scene );
     #endif //#ifdef DEBUG
