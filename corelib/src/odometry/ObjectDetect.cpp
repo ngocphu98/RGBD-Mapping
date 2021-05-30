@@ -158,7 +158,7 @@ cv::Point2f ObjDetect::detectObject(Object data)
                 break;
             }
             #ifdef DEBUG
-            //-- Maping data to new variable. Avoid change variable in code blow
+            //-- Maping data to new variable. Avoid change variable in code below
             cv::Mat img_scene = data.grayImg;
             cv::Mat img_object = _objects[i].grayImg;
             std::vector<cv::KeyPoint> keypoints_object = _objects[i].keyPoints;

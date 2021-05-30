@@ -34,9 +34,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QApplication>
 #include <stdio.h>
 
-#include "/home/phule/rtabmap/corelib/src/odometry/ObjectDetect.h"
+#include "/media/phule/DATA/HomeUbuntu/RGBD-Mapping/corelib/src/odometry/ObjectDetect.h"
 #include "rtabmap/core/util2d.h"
-ObjDetect Detector("/home/phule/rtabmap/SampleObjects");
+ObjDetect Detector("/media/phule/DATA/HomeUbuntu/RGBD-Mapping/SampleObjects");
 
 using namespace rtabmap;
 

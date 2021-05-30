@@ -35,6 +35,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pcl/pcl_base.h>
 #include <rtabmap/core/Link.h>
 
+// PhuLe
+// lib for write file
+#include <fstream>
+
 namespace rtabmap {
 
 class Signature;
@@ -73,6 +77,10 @@ private:
 	float validDepthRatio_;
 	int pointToPlaneK_;
 	float pointToPlaneRadius_;
+	// PhuLe init write file
+	std::ofstream data_file_;
+	// PhuLe Declare theta = 90
+	float thetaG_ = 90.0;
 
 	Registration * regPipeline_;
 	Signature * map_;

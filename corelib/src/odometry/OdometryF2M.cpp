@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <rtabmap/core/odometry/OdometryF2M.h>
 #include <pcl/common/io.h>
 
-#include "/home/phule/rtabmap/corelib/src/odometry/ObjectDetect.h"
+#include "/media/phule/DATA/HomeUbuntu/RGBD-Mapping/corelib/src/odometry/ObjectDetect.h"
 #include "rtabmap/core/util2d.h"
 
 #define GAUSS_VARICANCE_1 0.2
@@ -54,7 +54,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define kal(a,b) a + (GAUSS_VARICANCE_1/(GAUSS_VARICANCE_1 + GAUSS_VARICANCE_2))*(b - a)
 
-ObjDetect Detector("/home/phule/rtabmap/SampleObjects");
+ObjDetect Detector("/media/phule/DATA/HomeUbuntu/RGBD-Mapping/SampleObjects");
 
 
 #if _MSC_VER
@@ -177,6 +177,18 @@ OdometryF2M::OdometryF2M(const ParametersMap & parameters) :
 	}
 
 	parameters_ = bundleParameters;
+	// PhuLe init for write file
+	this->data_file_.open("coordinate_theta.txt");
+   if( !this->data_file_) // file couldn't be opened
+   { 
+      UERROR("Error: file could not be opened \n");
+    //   exit(1);
+   }
+   else
+   {
+	   this->data_file_<< "x      y      thetaG\n";
+   }
+   
 }
 
 OdometryF2M::~OdometryF2M()
@@ -185,6 +197,7 @@ OdometryF2M::~OdometryF2M()
 	delete lastFrame_;
 	delete sba_;
 	delete regPipeline_;
+	this->data_file_.close();	
 	UDEBUG("");
 }
 
@@ -352,11 +365,18 @@ Transform OdometryF2M::computeTransform(
 						guessIteration==0 && !guess.isNull()?this->getPose()*guess:!regPipeline_->isImageRequired()&&this->framesProcessed()<2?this->getPose():Transform(),
 						&regInfo);
 				this->printTranform(transform);
-				//Intergration for Object detect
-				UDEBUG("transform = %s", transform.prettyPrint().c_str());
 				static Object convertData;
+				float xq, yq, zq;
 				if (!transform.isNull())
 				{
+					// PhuLe Calculate Theta
+					// Theta = atan(R21/R11);
+					float theta_tmp = transform.r21()/transform.r11();
+					// ThetaG(i) = thetaG(i-1) + theta(i)
+					this->thetaG_ = this->thetaG_ + theta_tmp;
+					UDEBUG("theta_tmp: %f", &theta_tmp);
+					//Intergration for Object detect
+					UDEBUG("transform = %s", transform.prettyPrint().c_str());
 					convertData.grayImg = data.imageRaw();
 					convertData.depth 	= data.depthRaw();
 					cv::Point2f coordinate = Detector.detectObject(convertData);
@@ -367,16 +387,22 @@ Transform OdometryF2M::computeTransform(
 						transform.getTranslationAndEulerAngles(x_tmp, y_tmp, z_tmp, roll_tmp, pitch_tmp, yaw_tmp);
 	
 						//Optimize tranformation matrix using kalman filter
-						float xq, yq, zq;
 						xq = kal(x_tmp, coordinate.x);
 						yq = kal(x_tmp, coordinate.y);
 						zq = z_tmp;
 						UINFO("Kalman filter applied: xq = %f, yq = %f, zq = %f", xq, yq, zq);	
 						// Update new coordinate
-						transform = Transform(xq, yq, zq, roll_tmp, pitch_tmp, yaw_tmp);
+						// transform = Transform(xq, yq, zq, roll_tmp, pitch_tmp, yaw_tmp);
+						//Update with new coordinate and theta
+						transform = Transform(xq, yq, this->thetaG_);
 						UDEBUG("New transform: %s", transform.prettyPrint().c_str());
 					}
-				}
+					// this->data_file_<< std::setprecision(2) << xq <<" "
+					// 				<< std::setprecision(2) << yq <<" "
+					// 				<< std::setprecision(3)<< this->thetaG_ << "\n";
+				// PhuLe write data to file
+					this->data_file_ << uFormat("%f      %f        %f\n", xq, yq, this->thetaG_).c_str();
+				} //!transform.isNull()
 				if(maxCorrespondenceDistance>0.0f)
 				{
 					// set it back
